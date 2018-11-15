@@ -16,92 +16,40 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
 @Entity
 @Table(name = "empresa")
+@EqualsAndHashCode
 public class Empresa implements Serializable {
 
 	private static final long serialVersionUID = 3960436649365666213L;
-	
-	private Long id;
-	private String razaoSocial;
-	private String cnpj;
-	private Date dataCriacao;
-	private Date dataAtualizacao;
-	private List<Funcionario> funcionarios;
-	
-	public Empresa() {
-	}
 
 	@Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
 	@Column(name = "razao_social", nullable = false)
-	public String getRazaoSocial() {
-		return razaoSocial;
-	}
-
-	public void setRazaoSocial(String razaoSocial) {
-		this.razaoSocial = razaoSocial;
-	}
-
+	private String razaoSocial;
 	@Column(name = "cnpj", nullable = false)
-	public String getCnpj() {
-		return cnpj;
-	}
-
-	public void setCnpj(String cnpj) {
-		this.cnpj = cnpj;
-	}
-
+	private String cnpj;
 	@Column(name = "data_criacao", nullable = false)
-	public Date getDataCriacao() {
-		return dataCriacao;
-	}
-
-	public void setDataCriacao(Date dataCriacao) {
-		this.dataCriacao = dataCriacao;
-	}
-
+	private Date dataCriacao;
 	@Column(name = "data_atualizacao", nullable = false)
-	public Date getDataAtualizacao() {
-		return dataAtualizacao;
-	}
-
-	public void setDataAtualizacao(Date dataAtualizacao) {
-		this.dataAtualizacao = dataAtualizacao;
-	}
-
+	private Date dataAtualizacao;
 	@OneToMany(mappedBy = "empresa", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	public List<Funcionario> getFuncionarios() {
-		return funcionarios;
-	}
+	private List<Funcionario> funcionarios;
 
-	public void setFuncionarios(List<Funcionario> funcionarios) {
-		this.funcionarios = funcionarios;
-	}
-	
 	@PreUpdate
-    public void preUpdate() {
-        dataAtualizacao = new Date();
-    }
-     
-    @PrePersist
-    public void prePersist() {
-        final Date atual = new Date();
-        dataCriacao = atual;
-        dataAtualizacao = atual;
-    }
+	public void preUpdate() {
+		dataAtualizacao = new Date();
+	}
 
-	@Override
-	public String toString() {
-		return "Empresa [id=" + id + ", razaoSocial=" + razaoSocial + ", cnpj=" + cnpj + ", dataCriacao=" + dataCriacao
-				+ ", dataAtualizacao=" + dataAtualizacao + "]";
+	@PrePersist
+	public void prePersist() {
+		final Date atual = new Date();
+		dataCriacao = atual;
+		dataAtualizacao = atual;
 	}
 }
