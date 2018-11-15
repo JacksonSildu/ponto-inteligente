@@ -19,11 +19,96 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
+	<repositories>
+		<repository>
+			<id>spring-libs-release</id>
+			<name>Spring Releases</name>
+			<url>https://repo.spring.io/libs-release</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>apache-repository</id>
+			<name>Apache Repository</name>
+			<url>http://repo.maven.apache.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>sildu-releases</id>
+			<url>http://nexus.sildu.com.br/nexus/content/repositories/sildu-releases</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>sildu-releases</id>
+			<url>http://nexus.sildu.com.br/nexus/content/repositories/sildu-releases</url>
+		</repository>
+	</distributionManagement>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>8</java.version>
+
+		<!-- Sonar -->
+		<!-- The destination file for the code coverage report has to be set to 
+			the same value in the parent pom and in each module pom. Then JaCoCo will 
+			add up information in the same report, so that, it will give the cross-module 
+			code coverage. -->
+		<sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
+		<sonar.groovy.binaries>target/classes</sonar.groovy.binaries>
 	</properties>
+
+	<profiles>
+		<profile>
+			<id>sonar-coverage</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.jacoco</groupId>
+							<artifactId>jacoco-maven-plugin</artifactId>
+							<version>0.7.8</version>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+				<plugins>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<configuration>
+							<append>true</append>
+						</configuration>
+						<executions>
+							<execution>
+								<id>agent-for-ut</id>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>agent-for-it</id>
+								<goals>
+									<goal>prepare-agent-integration</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>jacoco-site</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>report</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>
@@ -119,6 +204,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.5.0.1254</version>
 			</plugin>
 		</plugins>
 	</build>
