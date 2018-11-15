@@ -26,8 +26,8 @@ import br.com.sildu.ponto.api.services.FuncionarioService;
 import br.com.sildu.ponto.api.utils.PasswordUtils;
 
 @RestController
-@RequestMapping("/api/cadastrar-pj")
 @CrossOrigin(origins = "*")
+@RequestMapping("/api/cadastrar-pj")
 public class CadastroPJController {
 
 	private static final Logger log = LoggerFactory.getLogger(CadastroPJController.class);
@@ -38,9 +38,6 @@ public class CadastroPJController {
 	@Autowired
 	private EmpresaService empresaService;
 
-	public CadastroPJController() {
-	}
-
 	/**
 	 * Cadastra uma pessoa jurídica no sistema.
 	 * 
@@ -50,14 +47,13 @@ public class CadastroPJController {
 	 * @throws NoSuchAlgorithmException
 	 */
 	@PostMapping
-	public ResponseEntity<Response<CadastroPJDto>> cadastrar(@Valid @RequestBody CadastroPJDto cadastroPJDto,
-			BindingResult result) throws NoSuchAlgorithmException {
-		log.info("Cadastrando PJ: {}", cadastroPJDto.toString());
-		Response<CadastroPJDto> response = new Response<CadastroPJDto>();
+	public ResponseEntity<Response<CadastroPJDto>> cadastrar(@Valid @RequestBody CadastroPJDto cadastroPJDto, BindingResult result) {
+		log.info("Cadastrando PJ: {}", cadastroPJDto);
+		Response<CadastroPJDto> response = new Response<>();
 
 		validarDadosExistentes(cadastroPJDto, result);
 		Empresa empresa = this.converterDtoParaEmpresa(cadastroPJDto);
-		Funcionario funcionario = this.converterDtoParaFuncionario(cadastroPJDto, result);
+		Funcionario funcionario = this.converterDtoParaFuncionario(cadastroPJDto);
 
 		if (result.hasErrors()) {
 			log.error("Erro validando dados de cadastro PJ: {}", result.getAllErrors());
@@ -108,12 +104,10 @@ public class CadastroPJController {
 	 * Converte os dados do DTO para funcionário.
 	 * 
 	 * @param cadastroPJDto
-	 * @param result
 	 * @return Funcionario
 	 * @throws NoSuchAlgorithmException
 	 */
-	private Funcionario converterDtoParaFuncionario(CadastroPJDto cadastroPJDto, BindingResult result)
-			throws NoSuchAlgorithmException {
+	private Funcionario converterDtoParaFuncionario(CadastroPJDto cadastroPJDto) {
 		Funcionario funcionario = new Funcionario();
 		funcionario.setNome(cadastroPJDto.getNome());
 		funcionario.setEmail(cadastroPJDto.getEmail());

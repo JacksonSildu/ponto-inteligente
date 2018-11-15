@@ -27,9 +27,6 @@ public class EmpresaController {
 	@Autowired
 	private EmpresaService empresaService;
 
-	public EmpresaController() {
-	}
-
 	/**
 	 * Retorna uma empresa dado um CNPJ.
 	 * 
@@ -39,7 +36,7 @@ public class EmpresaController {
 	@GetMapping(value = "/cnpj/{cnpj}")
 	public ResponseEntity<Response<EmpresaDto>> buscarPorCnpj(@PathVariable("cnpj") String cnpj) {
 		log.info("Buscando empresa por CNPJ: {}", cnpj);
-		Response<EmpresaDto> response = new Response<EmpresaDto>();
+		Response<EmpresaDto> response = new Response<>();
 		Optional<Empresa> empresa = empresaService.buscarPorCnpj(cnpj);
 
 		if (!empresa.isPresent()) {

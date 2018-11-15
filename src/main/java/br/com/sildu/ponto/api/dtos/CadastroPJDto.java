@@ -1,13 +1,14 @@
 package br.com.sildu.ponto.api.dtos;
 
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.br.CNPJ;
 import org.hibernate.validator.constraints.br.CPF;
 
 public class CadastroPJDto {
-	
+
 	private Long id;
 	private String nome;
 	private String email;
@@ -15,9 +16,6 @@ public class CadastroPJDto {
 	private String cpf;
 	private String razaoSocial;
 	private String cnpj;
-
-	public CadastroPJDto() {
-	}
 
 	public Long getId() {
 		return id;
@@ -39,7 +37,7 @@ public class CadastroPJDto {
 
 	@NotEmpty(message = "Email não pode ser vazio.")
 	@Length(min = 5, max = 200, message = "Email deve conter entre 5 e 200 caracteres.")
-	@Email(message="Email inválido.")
+	@Email(message = "Email inválido.")
 	public String getEmail() {
 		return email;
 	}
@@ -58,7 +56,7 @@ public class CadastroPJDto {
 	}
 
 	@NotEmpty(message = "CPF não pode ser vazio.")
-	@CPF(message="CPF inválido")
+	@CPF(message = "CPF inválido")
 	public String getCpf() {
 		return cpf;
 	}
@@ -78,7 +76,7 @@ public class CadastroPJDto {
 	}
 
 	@NotEmpty(message = "CNPJ não pode ser vazio.")
-	@CNPJ(message="CNPJ inválido.")
+	@CNPJ(message = "CNPJ inválido.")
 	public String getCnpj() {
 		return cnpj;
 	}

@@ -1,6 +1,5 @@
 package br.com.sildu.ponto.api.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -23,12 +22,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
 
-	@Autowired
-	private JwtTokenUtil jwtTokenUtil;
-
-	@Autowired
-	private UserDetailsService userDetailsService;
-
 	@Bean
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
@@ -44,11 +37,11 @@ public class SwaggerConfig {
 	}
 
 	@Bean
-	public SecurityConfiguration security() {
+	public SecurityConfiguration security(JwtTokenUtil jwtTokenUtil, UserDetailsService userDetailsService) {
 		String token;
 		try {
-			UserDetails userDetails = this.userDetailsService.loadUserByUsername("admin@sildu.com.br");
-			token = this.jwtTokenUtil.obterToken(userDetails);
+			UserDetails userDetails = userDetailsService.loadUserByUsername("admin@sildu.com.br");
+			token = jwtTokenUtil.obterToken(userDetails);
 		} catch (Exception e) {
 			token = "";
 		}

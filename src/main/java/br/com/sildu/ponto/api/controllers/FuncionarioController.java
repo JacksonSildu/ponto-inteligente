@@ -35,9 +35,6 @@ public class FuncionarioController {
 	@Autowired
 	private FuncionarioService funcionarioService;
 
-	public FuncionarioController() {
-	}
-
 	/**
 	 * Atualiza os dados de um funcionário.
 	 * 
@@ -48,25 +45,26 @@ public class FuncionarioController {
 	 * @throws NoSuchAlgorithmException
 	 */
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<Response<FuncionarioDto>> atualizar(@PathVariable("id") Long id, @Valid @RequestBody FuncionarioDto funcionarioDto, BindingResult result) throws NoSuchAlgorithmException {
-		log.info("Atualizando funcionário: {}", funcionarioDto.toString());
+	public ResponseEntity<Response<FuncionarioDto>> atualizar(@PathVariable("id") Long id, @Valid @RequestBody FuncionarioDto funcionarioDto, BindingResult result) {
+		log.info("Atualizando funcionário: {}", funcionarioDto);
 		Response<FuncionarioDto> response = new Response<>();
 
 		Optional<Funcionario> funcionario = this.funcionarioService.buscarPorId(id);
-		if (!funcionario.isPresent()) {
+		if (funcionario.isPresent()) {
+			Funcionario func = funcionario.get();
+			this.atualizarDadosFuncionario(func, funcionarioDto, result);
+
+			this.funcionarioService.persistir(funcionario.get());
+			response.setData(this.converterFuncionarioDto(funcionario.get()));
+		} else {
 			result.addError(new ObjectError("funcionario", "Funcionário não encontrado."));
 		}
-
-		this.atualizarDadosFuncionario(funcionario.get(), funcionarioDto, result);
 
 		if (result.hasErrors()) {
 			log.error("Erro validando funcionário: {}", result.getAllErrors());
 			result.getAllErrors().forEach(error -> response.getErrors().add(error.getDefaultMessage()));
 			return ResponseEntity.badRequest().body(response);
 		}
-
-		this.funcionarioService.persistir(funcionario.get());
-		response.setData(this.converterFuncionarioDto(funcionario.get()));
 
 		return ResponseEntity.ok(response);
 	}
@@ -79,7 +77,7 @@ public class FuncionarioController {
 	 * @param result
 	 * @throws NoSuchAlgorithmException
 	 */
-	private void atualizarDadosFuncionario(Funcionario funcionario, FuncionarioDto funcionarioDto, BindingResult result) throws NoSuchAlgorithmException {
+	private void atualizarDadosFuncionario(Funcionario funcionario, FuncionarioDto funcionarioDto, BindingResult result) {
 		funcionario.setNome(funcionarioDto.getNome());
 
 		if (!funcionario.getEmail().equals(funcionarioDto.getEmail())) {
@@ -96,8 +94,10 @@ public class FuncionarioController {
 		funcionario.setValorHora(null);
 		funcionarioDto.getValorHora().ifPresent(valorHora -> funcionario.setValorHora(new BigDecimal(valorHora)));
 
-		if (funcionarioDto.getSenha().isPresent()) {
-			funcionario.setSenha(PasswordUtils.gerarBCrypt(funcionarioDto.getSenha().get()));
+		Optional<String> senhaOpt = funcionarioDto.getSenha();
+		if (senhaOpt.isPresent()) {
+			String senha = senhaOpt.get();
+			funcionario.setSenha(PasswordUtils.gerarBCrypt(senha));
 		}
 	}
 

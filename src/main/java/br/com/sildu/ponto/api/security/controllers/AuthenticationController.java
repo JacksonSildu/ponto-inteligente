@@ -95,14 +95,15 @@ public class AuthenticationController {
 			response.getErrors().add("Token não informado.");
 		} else if (!jwtTokenUtil.tokenValido(token.get())) {
 			response.getErrors().add("Token inválido ou expirado.");
+		} else {
+			String refreshedToken = jwtTokenUtil.refreshToken(token.get());
+			response.setData(new TokenDto(refreshedToken));
 		}
 
 		if (!response.getErrors().isEmpty()) {
 			return ResponseEntity.badRequest().body(response);
 		}
 
-		String refreshedToken = jwtTokenUtil.refreshToken(token.get());
-		response.setData(new TokenDto(refreshedToken));
 		return ResponseEntity.ok(response);
 	}
 
