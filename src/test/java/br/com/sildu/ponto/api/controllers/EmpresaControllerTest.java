@@ -24,10 +24,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import br.com.sildu.ponto.api.entities.Empresa;
 import br.com.sildu.ponto.api.services.EmpresaService;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@RunWith(SpringRunner.class)
 public class EmpresaControllerTest {
 
 	@Autowired
