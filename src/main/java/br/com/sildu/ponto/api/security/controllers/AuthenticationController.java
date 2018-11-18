@@ -58,12 +58,6 @@ public class AuthenticationController {
 	public ResponseEntity<Response<TokenDto>> gerarTokenJwt(@Valid @RequestBody JwtAuthenticationDto authenticationDto, BindingResult result) {
 		Response<TokenDto> response = new Response<>();
 
-		if (result.hasErrors()) {
-			log.error("Erro validando lançamento: {}", result.getAllErrors());
-			result.getAllErrors().forEach(error -> response.getErrors().add(error.getDefaultMessage()));
-			return ResponseEntity.badRequest().body(response);
-		}
-
 		log.info("Gerando token para o email {}.", authenticationDto.getEmail());
 		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationDto.getEmail(), authenticationDto.getSenha()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -87,17 +81,21 @@ public class AuthenticationController {
 		Response<TokenDto> response = new Response<>();
 		Optional<String> token = Optional.ofNullable(request.getHeader(TOKEN_HEADER));
 
+		String tokenStr = "";
 		if (token.isPresent() && token.get().startsWith(BEARER_PREFIX)) {
-			token = Optional.of(token.get().substring(7));
+			tokenStr = token.get();
+			tokenStr = tokenStr.substring(7);
+		} else {
+			response.getErrors().add("Token Inválido ou não informado.");
 		}
 
-		if (!token.isPresent()) {
-			response.getErrors().add("Token não informado.");
-		} else if (!jwtTokenUtil.tokenValido(token.get())) {
-			response.getErrors().add("Token inválido ou expirado.");
-		} else {
-			String refreshedToken = jwtTokenUtil.refreshToken(token.get());
-			response.setData(new TokenDto(refreshedToken));
+		if (response.getErrors().isEmpty()) {
+			if (!jwtTokenUtil.tokenValido(tokenStr)) {
+				response.getErrors().add("Token inválido ou expirado.");
+			} else {
+				String refreshedToken = jwtTokenUtil.refreshToken(tokenStr);
+				response.setData(new TokenDto(refreshedToken));
+			}
 		}
 
 		if (!response.getErrors().isEmpty()) {

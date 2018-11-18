@@ -82,6 +82,9 @@
 						<artifactId>jacoco-maven-plugin</artifactId>
 						<configuration>
 							<append>true</append>
+							<excludes>
+								<exclude>br.com.sildu.ponto.api.security</exclude>
+							</excludes>
 						</configuration>
 						<executions>
 							<execution>

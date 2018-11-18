@@ -2,6 +2,7 @@ package br.com.sildu.ponto.api.controllers;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
@@ -68,7 +70,7 @@ public class LancamentoController {
 
 		PageRequest pageRequest = PageRequest.of(pag, this.qtdPorPagina, Direction.valueOf(dir), ord);
 		Page<Lancamento> lancamentos = this.lancamentoService.buscarPorFuncionarioId(funcionarioId, pageRequest);
-		Page<LancamentoDto> lancamentosDto = lancamentos.map(this::converterLancamentoDto);
+		Page<LancamentoDto> lancamentosDto = lancamentos == null ? new PageImpl<>(new ArrayList<>()) : lancamentos.map(this::converterLancamentoDto);
 
 		response.setData(lancamentosDto);
 		return ResponseEntity.ok(response);

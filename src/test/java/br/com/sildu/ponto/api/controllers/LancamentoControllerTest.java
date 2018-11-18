@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -62,9 +65,90 @@ public class LancamentoControllerTest {
 		BDDMockito.given(this.funcionarioService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(new Funcionario()));
 		BDDMockito.given(this.lancamentoService.persistir(Mockito.any(Lancamento.class))).willReturn(lancamento);
 
-		mvc.perform(MockMvcRequestBuilders.post(URL_BASE).content(this.obterJsonRequisicaoPost()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.id").value(ID_LANCAMENTO)).andExpect(jsonPath("$.data.tipo").value(TIPO)).andExpect(jsonPath("$.data.data").value(this.dateFormat.format(DATA)))
-				.andExpect(jsonPath("$.data.funcionarioId").value(ID_FUNCIONARIO)).andExpect(jsonPath("$.errors").isEmpty());
+		mvc.perform(MockMvcRequestBuilders
+				.post(URL_BASE)
+				.content(this.obterJsonRequisicaoPost())
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.id").value(ID_LANCAMENTO))
+				.andExpect(jsonPath("$.data.tipo").value(TIPO))
+				.andExpect(jsonPath("$.data.data").value(this.dateFormat.format(DATA)))
+				.andExpect(jsonPath("$.data.funcionarioId").value(ID_FUNCIONARIO))
+				.andExpect(jsonPath("$.errors").isEmpty());
+	}
+	
+	@Test
+	@WithMockUser
+	public void testCadastrarLancamentoFuncionarioNaoInformado() throws Exception {
+		Lancamento lancamento = obterDadosLancamento();
+		BDDMockito.given(this.funcionarioService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(new Funcionario()));
+		BDDMockito.given(this.lancamentoService.persistir(Mockito.any(Lancamento.class))).willReturn(lancamento);
+		
+		mvc.perform(MockMvcRequestBuilders
+				.post(URL_BASE)
+				.content(this.obterJsonRequisicaoSemFuncionarioIdPost())
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	@WithMockUser
+	public void testCadastrarLancamentoFuncionarioTipoInvalido() throws Exception {
+		Lancamento lancamento = obterDadosLancamento();
+		LancamentoDto dto = this.getLancamentoDto();
+		dto.setTipo(null);
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		BDDMockito.given(this.funcionarioService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(new Funcionario()));
+		BDDMockito.given(this.lancamentoService.persistir(Mockito.any(Lancamento.class))).willReturn(lancamento);
+		
+		mvc.perform(MockMvcRequestBuilders
+				.post(URL_BASE)
+				.content(mapper.writeValueAsString(dto))
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	@WithMockUser
+	public void testAtualizarLancamentoNaoEncontrado() throws Exception {
+		Lancamento lancamento = obterDadosLancamento();
+		lancamento.setId(ID_LANCAMENTO);
+		BDDMockito.given(this.funcionarioService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(new Funcionario()));
+		BDDMockito.given(this.lancamentoService.persistir(Mockito.any(Lancamento.class))).willReturn(lancamento);
+
+		mvc.perform(MockMvcRequestBuilders
+				.put(URL_BASE + ID_LANCAMENTO)
+				.content(this.obterJsonRequisicaoPost())
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	@WithMockUser
+	public void testAtualizarLancamento() throws Exception {
+		Lancamento lancamento = obterDadosLancamento();
+		lancamento.setId(ID_LANCAMENTO);
+		BDDMockito.given(this.funcionarioService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(new Funcionario()));
+		BDDMockito.given(this.lancamentoService.persistir(Mockito.any(Lancamento.class))).willReturn(lancamento);
+		BDDMockito.given(this.lancamentoService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(lancamento));
+		
+		mvc.perform(MockMvcRequestBuilders
+				.put(URL_BASE + ID_LANCAMENTO)
+				.content(this.obterJsonRequisicaoPost())
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.data.id").value(ID_LANCAMENTO))
+		.andExpect(jsonPath("$.data.tipo").value(TIPO))
+		.andExpect(jsonPath("$.data.data").value(this.dateFormat.format(DATA)))
+		.andExpect(jsonPath("$.data.funcionarioId").value(ID_FUNCIONARIO))
+		.andExpect(jsonPath("$.errors").isEmpty());
 	}
 
 	@Test
@@ -72,8 +156,14 @@ public class LancamentoControllerTest {
 	public void testCadastrarLancamentoFuncionarioIdInvalido() throws Exception {
 		BDDMockito.given(this.funcionarioService.buscarPorId(Mockito.anyLong())).willReturn(Optional.empty());
 
-		mvc.perform(MockMvcRequestBuilders.post(URL_BASE).content(this.obterJsonRequisicaoPost()).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.errors").value("Funcionário não encontrado. ID inexistente.")).andExpect(jsonPath("$.data").isEmpty());
+		mvc.perform(MockMvcRequestBuilders
+				.post(URL_BASE)
+				.content(this.obterJsonRequisicaoPost())
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").value("Funcionário não encontrado. ID inexistente."))
+				.andExpect(jsonPath("$.data").isEmpty());
 	}
 
 	@Test
@@ -81,7 +171,21 @@ public class LancamentoControllerTest {
 	public void testRemoverLancamento() throws Exception {
 		BDDMockito.given(this.lancamentoService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(new Lancamento()));
 
-		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE + ID_LANCAMENTO).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+		mvc.perform(MockMvcRequestBuilders
+				.delete(URL_BASE + ID_LANCAMENTO)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithMockUser(username = "admin@admin.com", roles = { "ADMIN" })
+	public void testRemoverLancamentoNaoEncontrado() throws Exception {
+		BDDMockito.given(this.lancamentoService.buscarPorId(Mockito.anyLong())).willReturn(Optional.empty());
+		
+		mvc.perform(MockMvcRequestBuilders
+				.delete(URL_BASE + ID_LANCAMENTO)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test
@@ -89,7 +193,44 @@ public class LancamentoControllerTest {
 	public void testRemoverLancamentoAcessoNegado() throws Exception {
 		BDDMockito.given(this.lancamentoService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(new Lancamento()));
 
-		mvc.perform(MockMvcRequestBuilders.delete(URL_BASE + ID_LANCAMENTO).accept(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
+		mvc.perform(MockMvcRequestBuilders
+				.delete(URL_BASE + ID_LANCAMENTO)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@WithMockUser
+	public void testListarPorFuncionarios() throws Exception {
+		PageRequest pageRequest = PageRequest.of(0, 25);
+		BDDMockito.given(this.lancamentoService.buscarPorFuncionarioId(ID_FUNCIONARIO, pageRequest)).willReturn(new PageImpl<>(new ArrayList<>()));
+
+		mvc.perform(MockMvcRequestBuilders
+				.get(URL_BASE + "/funcionario/" + ID_FUNCIONARIO)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithMockUser
+	public void testBuscarPorId() throws Exception {
+		BDDMockito.given(this.lancamentoService.buscarPorId(Mockito.anyLong())).willReturn(Optional.of(obterDadosLancamento()));
+		
+		mvc.perform(MockMvcRequestBuilders
+				.get(URL_BASE + ID_LANCAMENTO)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithMockUser
+	public void testBuscarPorIdNaoEncontrado() throws Exception {
+		BDDMockito.given(this.lancamentoService.buscarPorId(Mockito.anyLong())).willReturn(Optional.empty());
+		
+		mvc.perform(MockMvcRequestBuilders
+				.get(URL_BASE + ID_LANCAMENTO)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
 	}
 
 	private String obterJsonRequisicaoPost() throws JsonProcessingException {
@@ -100,6 +241,22 @@ public class LancamentoControllerTest {
 		lancamentoDto.setFuncionarioId(ID_FUNCIONARIO);
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(lancamentoDto);
+	}
+	
+	private String obterJsonRequisicaoSemFuncionarioIdPost() throws JsonProcessingException {
+		LancamentoDto lancamentoDto = getLancamentoDto();
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(lancamentoDto);
+	}
+
+	private LancamentoDto getLancamentoDto() {
+		LancamentoDto lancamentoDto = new LancamentoDto();
+		lancamentoDto.setId(null);
+		lancamentoDto.setData(this.dateFormat.format(DATA));
+		lancamentoDto.setTipo(TIPO);
+		lancamentoDto.setFuncionarioId(null);
+		
+		return lancamentoDto;
 	}
 
 	private Lancamento obterDadosLancamento() {

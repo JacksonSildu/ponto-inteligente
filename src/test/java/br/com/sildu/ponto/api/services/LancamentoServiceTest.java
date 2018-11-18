@@ -58,5 +58,10 @@ public class LancamentoServiceTest {
 		Lancamento lancamento = this.lancamentoService.persistir(new Lancamento());
 		assertNotNull(lancamento);
 	}
+	
+	@Test
+	public void testRemoverLancamentoLancamento() {
+		this.lancamentoService.remover(1L);
+	}
 
 }
