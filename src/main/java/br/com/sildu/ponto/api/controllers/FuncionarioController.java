@@ -80,11 +80,6 @@ public class FuncionarioController {
 	private void atualizarDadosFuncionario(Funcionario funcionario, FuncionarioDto funcionarioDto, BindingResult result) {
 		funcionario.setNome(funcionarioDto.getNome());
 
-		if (!funcionario.getEmail().equals(funcionarioDto.getEmail())) {
-			this.funcionarioService.buscarPorEmail(funcionarioDto.getEmail()).ifPresent(func -> result.addError(new ObjectError("email", "Email já existente.")));
-			funcionario.setEmail(funcionarioDto.getEmail());
-		}
-
 		funcionario.setQtdHorasAlmoco(null);
 		funcionarioDto.getQtdHorasAlmoco().ifPresent(qtdHorasAlmoco -> funcionario.setQtdHorasAlmoco(Float.valueOf(qtdHorasAlmoco)));
 
