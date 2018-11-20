@@ -58,6 +58,9 @@
 			code coverage. -->
 		<sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
 		<sonar.groovy.binaries>target/classes</sonar.groovy.binaries>
+		<sonar.coverage.exclusions> <!-- the members of the following list should be in the same line -->
+			src/main/java/br/com/sildu/ponto/api/dtos/*.java,src/main/java/br/com/sildu/ponto/api/security/**/*.java,src/main/java/br/com/sildu/ponto/api/config/*.java,src/main/java/br/com/sildu/ponto/api/entities/*.java,src/main/java/br/com/sildu/ponto/api/response/Response.java
+		</sonar.coverage.exclusions>
 	</properties>
 
 	<profiles>
@@ -82,9 +85,6 @@
 						<artifactId>jacoco-maven-plugin</artifactId>
 						<configuration>
 							<append>true</append>
-							<excludes>
-								<exclude>br.com.sildu.ponto.api.security</exclude>
-							</excludes>
 						</configuration>
 						<executions>
 							<execution>

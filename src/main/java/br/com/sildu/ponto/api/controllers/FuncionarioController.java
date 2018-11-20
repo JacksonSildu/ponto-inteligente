@@ -52,7 +52,7 @@ public class FuncionarioController {
 		Optional<Funcionario> funcionario = this.funcionarioService.buscarPorId(id);
 		if (funcionario.isPresent()) {
 			Funcionario func = funcionario.get();
-			this.atualizarDadosFuncionario(func, funcionarioDto, result);
+			this.atualizarDadosFuncionario(func, funcionarioDto);
 
 			this.funcionarioService.persistir(funcionario.get());
 			response.setData(this.converterFuncionarioDto(funcionario.get()));
@@ -77,7 +77,7 @@ public class FuncionarioController {
 	 * @param result
 	 * @throws NoSuchAlgorithmException
 	 */
-	private void atualizarDadosFuncionario(Funcionario funcionario, FuncionarioDto funcionarioDto, BindingResult result) {
+	private void atualizarDadosFuncionario(Funcionario funcionario, FuncionarioDto funcionarioDto) {
 		funcionario.setNome(funcionarioDto.getNome());
 
 		funcionario.setQtdHorasAlmoco(null);
